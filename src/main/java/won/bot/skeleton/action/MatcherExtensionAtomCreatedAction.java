@@ -28,6 +28,13 @@ import java.util.Set;
 
 public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private static float PPM_OZONE = 0.1f;
+    private static float PPM_NO = 0.12f;
+    private static float PPM_SDIO = 0.2f;
+    private static float PPM_CO = 9f;
+    private static float µG_PM10 = 50f;
+    private static float µG_PM2_5 = 25f;
+    private static float µG_TSP = 80f;
 
     public MatcherExtensionAtomCreatedAction(EventListenerContext eventListenerContext) {
         super(eventListenerContext);
@@ -53,7 +60,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
         Map<URI, Set<URI>> connectedSocketsMapSet = botContextWrapper.getConnectedSockets();
 
-
+/*
         URI uri =  atomCreatedEvent.getAtomURI();
         Map<String, Object> map = botContextWrapper.getBotContext().loadObjectMap(uri.toString());
 
@@ -76,7 +83,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         for(String s:defaultWrapper.getContentPropertyStringValues(RDFS.label, "Titel")){
             logger.info("Title: " + s);
         }
-
+*/
 
 
 
