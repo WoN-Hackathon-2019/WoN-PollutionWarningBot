@@ -1,5 +1,8 @@
 package won.bot.skeleton.action;
 
+import javafx.beans.property.Property;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.util.Symbol;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
@@ -14,6 +17,7 @@ import won.protocol.message.WonMessage;
 import won.protocol.message.builder.WonMessageBuilder;
 import won.protocol.util.DefaultAtomModelWrapper;
 import won.protocol.util.RdfUtils;
+import won.protocol.vocabulary.SCHEMA;
 
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
@@ -87,19 +91,31 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
                         .sender(senderSocket)
                         .recipient(targetSocket)
                         .content()
-                        .text(getAirData(atomCreatedEvent, defaultWrapper))
+                        .text(getAirData(atomCreatedEvent, defaultWrapper, event))
                         .build();
                 ctx.getWonMessageSender().prepareAndSendMessage(wonMessage);
             }
         }
     }
 
-    private String getAirData(MatcherExtensionAtomCreatedEvent atomCreatedEvent, DefaultAtomModelWrapper defaultWrapper){
+    private String getAirData(MatcherExtensionAtomCreatedEvent atomCreatedEvent, DefaultAtomModelWrapper defaultWrapper, Event event){
         //todo: substitute random values w/ actual values read from defaultWrapper
+        Model m = defaultWrapper.getAtomModel();
+        Resource atom = defaultWrapper.getAtomModel().getResource(((MatcherExtensionAtomCreatedEvent) event).getAtomURI().toString());
         String def_string = "We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI()+ "\n";
         String city = "City: Wien\n";
         String air_qual_quot = "Air quality quotient: " + 5 + "\n";
-        String other_val = "other values: " + "xxxxx";
-        return def_string.concat(city).concat(air_qual_quot).concat(other_val);
+        String price = "other values: " +  atom.getProperty(SCHEMA.PRICE) + "\n";
+        String description = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getString() + "\n";
+        //String description1 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getResource() + "\n";
+        //String description2 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getLanguage() + "\n";
+
+
+
+
+
+
+
+        return def_string.concat(city).concat(air_qual_quot).concat(price).concat(description);
     }
 }
