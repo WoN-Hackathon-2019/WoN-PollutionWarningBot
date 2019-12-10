@@ -1,7 +1,7 @@
 package won.bot.skeleton.action;
 
-import javafx.beans.property.Property;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.util.Symbol;
 import org.apache.jena.vocabulary.RDFS;
@@ -112,13 +112,21 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         String def_string = "We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI()+ "\n";
         String city = "City: Wien\n";
 
-        String airQ1 = "Air quality index (Ozone): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_OZONE) + "\n";
-        String airQ2 = "Air quality index (Nitrogen dioxide): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_NO) + "\n";
-        String airQ3 = "Air quality index (Sulfur dioxide): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_SDIO) + "\n";
-        String airQ4 = "Air quality index (Carbon monoxide): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_CO) + "\n";
-        String airQ5 = "Air quality index (PM10): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), µG_PM10) + "\n";
-        String airQ6 = "Air quality index (PM2.5): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), µG_PM2_5) + "\n";
-        String airQ7 = "Air quality index (TSP): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), µG_TSP) + "\n";
+        Property ozone = m.createProperty("http://schema.org/ozone");
+        Property nitrogen = m.createProperty("http://schema.org/ozone");
+        Property sulfur = m.createProperty("http://schema.org/ozone");
+        Property carbon = m.createProperty("http://schema.org/ozone");
+        Property pm10 = m.createProperty("http://schema.org/ozone");
+        Property pm2_5 = m.createProperty("http://schema.org/ozone");
+        Property tsp = m.createProperty("http://schema.org/ozone");
+
+        String airQ1 = "Air quality index (Ozone): " + getCat(atom.getProperty(ozone).getInt(), PPM_OZONE) + "\n";
+        String airQ2 = "Air quality index (Nitrogen dioxide): " + getCat(atom.getProperty(nitrogen).getInt(), PPM_NO) + "\n";
+        String airQ3 = "Air quality index (Sulfur dioxide): " + getCat(atom.getProperty(sulfur).getInt(), PPM_SDIO) + "\n";
+        String airQ4 = "Air quality index (Carbon monoxide): " + getCat(atom.getProperty(carbon).getInt(), PPM_CO) + "\n";
+        String airQ5 = "Air quality index (PM10): " + getCat(atom.getProperty(pm10).getInt(), µG_PM10) + "\n";
+        String airQ6 = "Air quality index (PM2.5): " + getCat(atom.getProperty(pm2_5).getInt(), µG_PM2_5) + "\n";
+        String airQ7 = "Air quality index (TSP): " + getCat(atom.getProperty(tsp).getInt(), µG_TSP) + "\n";
 
         //String description1 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getResource() + "\n";
         //String description2 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getLanguage() + "\n";
