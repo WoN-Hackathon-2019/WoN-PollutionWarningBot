@@ -111,18 +111,33 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         Resource atom = defaultWrapper.getAtomModel().getResource(((MatcherExtensionAtomCreatedEvent) event).getAtomURI().toString());
         String def_string = "We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI()+ "\n";
         String city = "City: Wien\n";
-        String air_qual_quot = "Air quality quotient: " + 5 + "\n";
-        String price = "other values: " +  atom.getProperty(SCHEMA.PRICE) + "\n";
-        String description = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getString() + "\n";
+
+        String airQ1 = "Air quality index (Ozone): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_OZONE) + "\n";
+        String airQ2 = "Air quality index (Nitrogen dioxide): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_NO) + "\n";
+        String airQ3 = "Air quality index (Sulfur dioxide): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_SDIO) + "\n";
+        String airQ4 = "Air quality index (Carbon monoxide): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), PPM_CO) + "\n";
+        String airQ5 = "Air quality index (PM10): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), µG_PM10) + "\n";
+        String airQ6 = "Air quality index (PM2.5): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), µG_PM2_5) + "\n";
+        String airQ7 = "Air quality index (TSP): " + getCat(atom.getProperty(SCHEMA.DESCRIPTION).getInt(), µG_TSP) + "\n";
+
         //String description1 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getResource() + "\n";
         //String description2 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getLanguage() + "\n";
 
+        return def_string.concat(city).concat(airQ1).concat(airQ2).concat(airQ3).concat(airQ4).concat(airQ5).concat(airQ6).concat(airQ7);
+    }
 
-
-
-
-
-
-        return def_string.concat(city).concat(air_qual_quot).concat(price).concat(description);
+    private String getCat(float value, float opt){
+        float val = value / opt * 100;
+        if(val < 33){
+            return "Very good";
+        }else if(val < 66){
+            return "Good";
+        }else if(val < 99){
+            return "Fair";
+        }else if(val < 149){
+            return "Poor";
+        }else{
+            return "Very poor";
+        }
     }
 }
