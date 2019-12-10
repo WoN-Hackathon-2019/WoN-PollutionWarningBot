@@ -87,14 +87,19 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
                         .sender(senderSocket)
                         .recipient(targetSocket)
                         .content()
-                        .text("We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI()+ "\n" +
-                                "City: " + "Wien\n" +
-                                "Air quality qutient: " + "Quotient\n" +
-                                "other values: " + "xxxxx")
+                        .text(getAirData(atomCreatedEvent, defaultWrapper))
                         .build();
-                //todo: substitute random values w/ actual values read from defaultWrapper
                 ctx.getWonMessageSender().prepareAndSendMessage(wonMessage);
             }
         }
+    }
+
+    private String getAirData(MatcherExtensionAtomCreatedEvent atomCreatedEvent, DefaultAtomModelWrapper defaultWrapper){
+        //todo: substitute random values w/ actual values read from defaultWrapper
+        String def_string = "We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI()+ "\n";
+        String city = "City: Wien\n";
+        String air_qual_quot = "Air quality quotient: " + 5 + "\n";
+        String other_val = "other values: " + "xxxxx";
+        return def_string.concat(city).concat(air_qual_quot).concat(other_val);
     }
 }
