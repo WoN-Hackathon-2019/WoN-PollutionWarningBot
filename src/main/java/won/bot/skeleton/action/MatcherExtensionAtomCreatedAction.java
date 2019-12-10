@@ -17,6 +17,7 @@ import won.protocol.util.RdfUtils;
 
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -31,17 +32,27 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
     @Override
     protected void doRun(Event event, EventListener executingListener) throws Exception {
         EventListenerContext ctx = getEventListenerContext();
+
         if (!(event instanceof MatcherExtensionAtomCreatedEvent) || !(getEventListenerContext().getBotContextWrapper() instanceof SkeletonBotContextWrapper)) {
             logger.error("MatcherExtensionAtomCreatedAction can only handle MatcherExtensionAtomCreatedEvent and only works with SkeletonBotContextWrapper");
             return;
         }
+
         SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) ctx.getBotContextWrapper();
         MatcherExtensionAtomCreatedEvent atomCreatedEvent = (MatcherExtensionAtomCreatedEvent) event;
 
+        DefaultAtomModelWrapper defaultWrapper = new DefaultAtomModelWrapper(atomCreatedEvent.getAtomData());
+        Collection<String> tags = defaultWrapper.getAllTags();
+        if(!tags.contains("AirData")) {//todo: filter tags set in atoms of AirQualityBot
+            return;
+        }
+
         Map<URI, Set<URI>> connectedSocketsMapSet = botContextWrapper.getConnectedSockets();
+
 
         URI uri =  atomCreatedEvent.getAtomURI();
         Map<String, Object> map = botContextWrapper.getBotContext().loadObjectMap(uri.toString());
+
 
         botContextWrapper.getBotContext().loadFromObjectMap("s:title", uri.toString());
        for(String s : map.keySet()){
@@ -50,14 +61,15 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         }
 
 
-        DefaultAtomModelWrapper wrapper = new DefaultAtomModelWrapper(((MatcherExtensionAtomCreatedEvent) event).getAtomData());
-        for(String s:wrapper.getAllTags()){
+       //DefaultAtomModelWrapper wrapper = new DefaultAtomModelWrapper(atomCreatedEvent.getAtomData());
+
+        for(String s:defaultWrapper.getAllTags()){
             logger.info("Tag: " + s);
         }
-        for(String s:wrapper.getAllTitles()){
+        for(String s:defaultWrapper.getAllTitles()){
             logger.info("Title: " + s);
         }
-        for(String s:wrapper.getContentPropertyStringValues(RDFS.label, "Titel")){
+        for(String s:defaultWrapper.getContentPropertyStringValues(RDFS.label, "Titel")){
             logger.info("Title: " + s);
         }
 
@@ -75,8 +87,12 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
                         .sender(senderSocket)
                         .recipient(targetSocket)
                         .content()
-                        .text("We registered that an Atom was created, atomUri is: " + atomCreatedEvent.getAtomURI())
+                        .text("We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI()+ "\n" +
+                                "City: " + "Wien\n" +
+                                "Air quality qutient: " + "Quotient\n" +
+                                "other values: " + "xxxxx")
                         .build();
+                //todo: substitute random values w/ actual values read from defaultWrapper
                 ctx.getWonMessageSender().prepareAndSendMessage(wonMessage);
             }
         }
