@@ -54,7 +54,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
         DefaultAtomModelWrapper defaultWrapper = new DefaultAtomModelWrapper(atomCreatedEvent.getAtomData());
         Collection<String> tags = defaultWrapper.getAllTags();
-        if (!tags.contains("AirQualityData")) {//todo: filter tags set in atoms of AirQualityBot
+        if (!tags.contains("AirQualityData")) {
             return;
         }
 
