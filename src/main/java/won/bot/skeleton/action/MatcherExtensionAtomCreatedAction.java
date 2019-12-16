@@ -88,29 +88,36 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
             logger.info("Title: " + s);
         }
 */
-        getAirData(atomCreatedEvent, defaultWrapper, event);
 
+        String[] output = getAirData(atomCreatedEvent, defaultWrapper, event);
 
-        for (Map.Entry<URI, Set<URI>> entry : connectedSocketsMapSet.entrySet()) {
-            URI senderSocket = entry.getKey();
-            Set<URI> targetSocketsSet = entry.getValue();
-            for (URI targetSocket : targetSocketsSet) {
-                logger.info("TODO: Send MSG(" + senderSocket + "->" + targetSocket + ") that we registered that an Atom was created, atomUri is: " + atomCreatedEvent.getAtomURI());
-                WonMessage wonMessage = WonMessageBuilder
-                        .connectionMessage()
-                        .sockets()
-                        .sender(senderSocket)
-                        .recipient(targetSocket)
-                        .content()
-                        .text(getAirData(atomCreatedEvent, defaultWrapper, event))
-                        .build();
-                ctx.getWonMessageSender().prepareAndSendMessage(wonMessage);
+        List<String> subs = Message2User.getSubscribers().get(output[1]);
+
+        if (subs != null) {
+            for (Map.Entry<URI, Set<URI>> entry : connectedSocketsMapSet.entrySet()) {
+                URI senderSocket = entry.getKey();
+                Set<URI> targetSocketsSet = entry.getValue();
+                for (URI targetSocket : targetSocketsSet) {
+                    if (subs.contains(senderSocket.toString())) {
+                        logger.info("TODO: Send MSG(" + senderSocket + "->" + targetSocket + ") that we registered that an Atom was created, atomUri is: " + atomCreatedEvent.getAtomURI());
+                        WonMessage wonMessage = WonMessageBuilder
+                                .connectionMessage()
+                                .sockets()
+                                .sender(senderSocket)
+                                .recipient(targetSocket)
+                                .content()
+                                .text(output[0])
+                                .build();
+                        ctx.getWonMessageSender().prepareAndSendMessage(wonMessage);
+                    }
+                }
             }
         }
     }
 
-    private String getAirData(MatcherExtensionAtomCreatedEvent atomCreatedEvent, DefaultAtomModelWrapper defaultWrapper, Event event) {
+    private String[] getAirData(MatcherExtensionAtomCreatedEvent atomCreatedEvent, DefaultAtomModelWrapper defaultWrapper, Event event) {
         //todo: substitute random values w/ actual values read from defaultWrapper
+        String[] outData = new String[2];
         Model m = defaultWrapper.getAtomModel();
         Resource atom = defaultWrapper.getAtomModel().getResource(((MatcherExtensionAtomCreatedEvent) event).getAtomURI().toString());
         String output = "We registered that an Atom with tag 'AirQualityData' was created, atomUri is: " + atomCreatedEvent.getAtomURI() + "\n";
@@ -124,7 +131,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         String country_val = addr.getProperty(AirQualityDataSchema.ADDR_COUNTRY).getString();
         String region_val = addr.getProperty(AirQualityDataSchema.ADDR_CITY).getString();
 
-        String country = "Country: " +country_val + "\n";
+        String country = "Country: " + country_val + "\n";
         String location = "Locality: " + addr.getProperty(AirQualityDataSchema.ADDR_LOCALITY).getString() + "\n";
         String region = "Region: " + region_val + "\n";
 
@@ -132,7 +139,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         output += country + location + region;
 
 
-        StmtIterator it = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).listProperties(AirQualityDataSchema.MEASUREMENT);
+        StmtIterator it = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).listProperties(AirQualityDataSchema.PLACE_MEASUREMENT);
 
         while (it.hasNext()) {
             data = "";
@@ -144,10 +151,11 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
             double value = st.getProperty(AirQualityDataSchema.MEASURE_VALUE).getDouble();
             double standard = getStandardByParam(param);
+
             if (standard > 0) {
-                data += (param_name + ": " + value + " " + unit + " AirIndex: " + getCat(value, standard) + "Date: " + date + "\n");
+                data += (param_name + ": " + value + " " + unit + " AirIndex: " + getCat(value, standard) + "\nDate: " + date + "\n");
                 output += (data);
-                values.put(country_val.toLowerCase()+'/'+region_val.toLowerCase()+'/'+param.toLowerCase(), value);
+                values.put(country_val.toLowerCase() + '/' + region_val.toLowerCase() + '/' + param.toLowerCase(), value);
             }
         }
 
@@ -163,7 +171,9 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         //String description2 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getLanguage() + "\n";
 
         System.out.println(output);
-        return output;
+        outData[0] = output;
+        outData[1] = country_val.toLowerCase() + '/' + region_val.toLowerCase();
+        return outData;
     }
 
     private double getStandardByParam(String param) {

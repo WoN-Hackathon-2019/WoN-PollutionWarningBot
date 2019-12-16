@@ -29,6 +29,11 @@ import java.util.stream.Collectors;
  */
 public class Message2User extends BaseEventBotAction {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    public static Map<String, List<String>> getSubscribers() {
+        return subscribers;
+    }
+
     private static Map<String, List<String>> subscribers = new HashedMap();
 
     public Message2User(EventListenerContext ctx) {
@@ -43,6 +48,8 @@ public class Message2User extends BaseEventBotAction {
                 && ctx.getBotContextWrapper() instanceof SkeletonBotContextWrapper) {
             Connection con = ((MessageFromOtherAtomEvent) event).getCon();
             URI msgAtomUri = con.getAtomURI();
+            URI targetUri = con.getTargetAtomURI();
+            URI socketUri = con.getSocketURI();
             String message = "";
             try {
                 WonMessage msg = ((MessageEvent) event).getWonMessage();
@@ -52,44 +59,41 @@ public class Message2User extends BaseEventBotAction {
             }
             message = message.toLowerCase();
             String responseMessge = "You want specific information about Austria? Just type the name of the 'AT'!";
-            Pattern regexGiveCities = Pattern.compile( "^[a-z]+/city ([a-z]-[a-z])");
-            Pattern regexGiveCountries = Pattern.compile("^country ([a-z]-[a-z])");
-            Pattern sub_regex = Pattern.compile("^sub[a-z]+/[a-z]+");
-            Pattern unsub_regex = Pattern.compile("^unsub[a-z]+/[a-z]+");
+            Pattern regexGiveCities = Pattern.compile("^[a-z]+/get \\([a-z]-[a-z]\\)");
+            Pattern regexGiveCountries = Pattern.compile("^get \\([a-z]-[a-z]\\)");
+            Pattern sub_regex = Pattern.compile("^sub [a-z]+/[a-z]+");
+            Pattern unsub_regex = Pattern.compile("^unsub [a-z]+/[a-z]+");
             System.out.println("regexGiveCities: " + regexGiveCities);
             System.out.println("regexGiveCountries: " + regexGiveCountries);
             System.out.println("sub_regex: " + sub_regex);
             System.out.println("unsub_regex: " + unsub_regex);
             System.out.println("msg: " + message);
 
-            Pattern test  = Pattern.compile("^[a-z]+");
-            String returnMsg = "";
 
-            if (test.matcher(message).find()) {
-                System.out.println("FOUND.");
-                returnMsg = "found";
-            }
+            String returnMsg = "";
 
             if (sub_regex.matcher(message).find()) {
                 System.out.println("sub_regex");
+                message = message.split("sub ")[1];
                 List<String> subsc;
                 subsc = subscribers.get(message);
                 if (subsc == null) {
                     List<String> uri = new ArrayList<>();
-                    uri.add(msgAtomUri.toString());
+                    uri.add(socketUri.toString());
                     subscribers.put(message, uri);
                     returnMsg = "Subscribed to: " + message;
                 } else {
-                    subsc.add(msgAtomUri.toString());
+                    subsc.add(socketUri.toString());
                     subscribers.put(message, subsc);
                     returnMsg = "Already subscribed to: " + message;
                 }
             } else if (unsub_regex.matcher(message).find()) {
                 System.out.println("unsub_regex");
+                message = message.split("unsub ")[1];
                 List<String> subsc;
                 subsc = subscribers.get(message);
                 if (subsc != null) {
-                    subsc.remove(msgAtomUri.toString());
+                    subsc.remove(socketUri.toString());
                     subscribers.put(message, subsc);
                     returnMsg = "Unsubscribed from: " + message;
                 }
@@ -98,12 +102,30 @@ public class Message2User extends BaseEventBotAction {
                 //String newJokeText = chuckNorrisJoke.getValue();
                 //responseMessge = "Okay, how about this one: \n" + newJokeText;
             } else if (regexGiveCountries.matcher(message).find()) {
-                System.out.println("regexGiveCountries");
                 char[] bounds = getBounds(message);
                 Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> charIsInRange(bounds[0], bounds[1], s.charAt(0))).collect(Collectors.toSet());
+                List<String> countries = new ArrayList<>();
                 returnMsg = "Possible countries are: \n";
                 for (String s : keys) {
-                    returnMsg += s.split("/")[0] + "\n";
+                    String country = s.split("/")[0];
+                    if(!countries.contains(country)){
+                        returnMsg += country.toUpperCase() + "\n";
+                        countries.add(country);
+                    }
+                }
+
+            }else if (regexGiveCities.matcher(message).find()) {
+                char[] bounds = getBounds(message);
+                String country = message.split("/")[0];
+                Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> s.split("/")[0].compareTo(country)==0 && charIsInRange(bounds[0], bounds[1], s.split("/")[1].charAt(0))).collect(Collectors.toSet());
+                List<String> cities = new ArrayList<>();
+                returnMsg = "Possible cities are: \n";
+                for (String s : keys) {
+                    String city = s.split("/")[1];
+                    if(!cities.contains(city)){
+                        returnMsg += city + "\n";
+                        cities.add(city);
+                    }
                 }
 
             }
