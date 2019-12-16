@@ -120,24 +120,19 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         String[] outData = new String[2];
         Model m = defaultWrapper.getAtomModel();
         Resource atom = defaultWrapper.getAtomModel().getResource(((MatcherExtensionAtomCreatedEvent) event).getAtomURI().toString());
-        String output = "We registered that an Atom with tag 'AirQualityData' was created, atomUri is: " + atomCreatedEvent.getAtomURI() + "\n";
-
+        String output = "";
         String data = "";
 
-        System.out.println("Found atom uri: " + atom.getURI());
         Resource addr = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).getPropertyResourceValue(AirQualityDataSchema.PLACE_ADDRESS);
-        System.out.println(addr);
 
         String country_val = addr.getProperty(AirQualityDataSchema.ADDR_COUNTRY).getString();
         String region_val = addr.getProperty(AirQualityDataSchema.ADDR_CITY).getString();
 
         String country = "Country: " + country_val + "\n";
         String location = "Locality: " + addr.getProperty(AirQualityDataSchema.ADDR_LOCALITY).getString() + "\n";
-        String region = "Region: " + region_val + "\n";
-
+        String region = "Region: " + region_val + "\n\n";
 
         output += country + location + region;
-
 
         StmtIterator it = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).listProperties(AirQualityDataSchema.PLACE_MEASUREMENT);
 
@@ -153,8 +148,8 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
             double standard = getStandardByParam(param);
 
             if (standard > 0) {
-                data += (param_name + ": " + value + " " + unit + " AirIndex: " + getCat(value, standard) + "\nDate: " + date + "\n");
-                output += (data);
+                data += (param_name + ": " + value + " " + unit + "\nAirIndex: " + getCat(value, standard) + "\nDate: " + date + "\n");
+                output += (data)+"\n";
                 values.put(country_val.toLowerCase() + '/' + region_val.toLowerCase() + '/' + param.toLowerCase(), value);
             }
         }

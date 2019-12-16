@@ -63,17 +63,16 @@ public class Message2User extends BaseEventBotAction {
             Pattern regexGiveCountries = Pattern.compile("^get \\([a-z]-[a-z]\\)");
             Pattern sub_regex = Pattern.compile("^sub [a-z]+/[a-z]+");
             Pattern unsub_regex = Pattern.compile("^unsub [a-z]+/[a-z]+");
-            System.out.println("regexGiveCities: " + regexGiveCities);
-            System.out.println("regexGiveCountries: " + regexGiveCountries);
-            System.out.println("sub_regex: " + sub_regex);
-            System.out.println("unsub_regex: " + unsub_regex);
-            System.out.println("msg: " + message);
+            //System.out.println("regexGiveCities: " + regexGiveCities);
+            //System.out.println("regexGiveCountries: " + regexGiveCountries);
+            //System.out.println("sub_regex: " + sub_regex);
+            //System.out.println("unsub_regex: " + unsub_regex);
+            //System.out.println("msg: " + message);
 
 
             String returnMsg = "";
 
             if (sub_regex.matcher(message).find()) {
-                System.out.println("sub_regex");
                 message = message.split("sub ")[1];
                 List<String> subsc;
                 subsc = subscribers.get(message);
@@ -88,7 +87,6 @@ public class Message2User extends BaseEventBotAction {
                     returnMsg = "Already subscribed to: " + message;
                 }
             } else if (unsub_regex.matcher(message).find()) {
-                System.out.println("unsub_regex");
                 message = message.split("unsub ")[1];
                 List<String> subsc;
                 subsc = subscribers.get(message);
