@@ -17,6 +17,7 @@ import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandResul
 import won.bot.framework.eventbot.event.impl.command.connect.ConnectCommandSuccessEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.CloseFromOtherAtomEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.ConnectFromOtherAtomEvent;
+import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.framework.eventbot.filter.impl.AtomUriInNamedListFilter;
 import won.bot.framework.eventbot.filter.impl.CommandResultFilter;
 import won.bot.framework.eventbot.filter.impl.NotFilter;
@@ -28,6 +29,7 @@ import won.bot.framework.extensions.matcher.MatcherExtensionAtomCreatedEvent;
 import won.bot.framework.extensions.serviceatom.ServiceAtomBehaviour;
 import won.bot.framework.extensions.serviceatom.ServiceAtomExtension;
 import won.bot.skeleton.action.MatcherExtensionAtomCreatedAction;
+import won.bot.skeleton.action.Message2User;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 
 public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAtomExtension {
@@ -118,6 +120,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
             }
         });
         // listen for the MatcherExtensionAtomCreatedEvent
+        bus.subscribe(MessageFromOtherAtomEvent.class, new Message2User(ctx));
         bus.subscribe(MatcherExtensionAtomCreatedEvent.class, new MatcherExtensionAtomCreatedAction(ctx));
         bus.subscribe(CloseFromOtherAtomEvent.class, new BaseEventBotAction(ctx) {
             @Override

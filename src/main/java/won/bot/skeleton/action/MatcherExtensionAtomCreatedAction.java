@@ -37,6 +37,9 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
     private static final String co = "co";
     private static final String so2 = "so2";
 
+
+    private static Map<String, Double> values = new HashMap<>();
+
     public MatcherExtensionAtomCreatedAction(EventListenerContext eventListenerContext) {
         super(eventListenerContext);
     }
@@ -89,11 +92,9 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
 
         for (Map.Entry<URI, Set<URI>> entry : connectedSocketsMapSet.entrySet()) {
-            System.out.println("entry");
             URI senderSocket = entry.getKey();
             Set<URI> targetSocketsSet = entry.getValue();
             for (URI targetSocket : targetSocketsSet) {
-                System.out.println("socket found");
                 logger.info("TODO: Send MSG(" + senderSocket + "->" + targetSocket + ") that we registered that an Atom was created, atomUri is: " + atomCreatedEvent.getAtomURI());
                 WonMessage wonMessage = WonMessageBuilder
                         .connectionMessage()
@@ -112,17 +113,21 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         //todo: substitute random values w/ actual values read from defaultWrapper
         Model m = defaultWrapper.getAtomModel();
         Resource atom = defaultWrapper.getAtomModel().getResource(((MatcherExtensionAtomCreatedEvent) event).getAtomURI().toString());
-        String output = "We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI() + "\n";
+        String output = "We registered that an Atom with tag 'AirQualityData' was created, atomUri is: " + atomCreatedEvent.getAtomURI() + "\n";
 
         String data = "";
 
         System.out.println("Found atom uri: " + atom.getURI());
-        Resource addr = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).getPropertyResourceValue(AirQualityDataSchema.ADDRESS);
+        Resource addr = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).getPropertyResourceValue(AirQualityDataSchema.PLACE_ADDRESS);
         System.out.println(addr);
 
-        String country = "Country: " + addr.getProperty(AirQualityDataSchema.COUNTRY).getString() + "\n";
-        String location = "Locality: " + addr.getProperty(AirQualityDataSchema.LOCALITY).getString() + "\n";
-        String region = "Region: " + atom.getProperty(AirQualityDataSchema.CITY).getString() + "\n";
+        String country_val = addr.getProperty(AirQualityDataSchema.ADDR_COUNTRY).getString();
+        String region_val = addr.getProperty(AirQualityDataSchema.ADDR_CITY).getString();
+
+        String country = "Country: " +country_val + "\n";
+        String location = "Locality: " + addr.getProperty(AirQualityDataSchema.ADDR_LOCALITY).getString() + "\n";
+        String region = "Region: " + region_val + "\n";
+
 
         output += country + location + region;
 
@@ -134,7 +139,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
             Statement st = it.next();
             String param = st.getProperty(AirQualityDataSchema.MEASURE_PARAM).getString();
             String unit = st.getProperty(AirQualityDataSchema.MEASURE_UNIT).getString();
-            String date = "";// st.getProperty(AirQualityDataSchema.MEASURE_DATE).getString();
+            String date = st.getProperty(AirQualityDataSchema.MEASURE_DATETIME).getString();
             String param_name = st.getProperty(AirQualityDataSchema.MEASURE_PARAM_NAME).getString();
 
             double value = st.getProperty(AirQualityDataSchema.MEASURE_VALUE).getDouble();
@@ -142,6 +147,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
             if (standard > 0) {
                 data += (param_name + ": " + value + " " + unit + " AirIndex: " + getCat(value, standard) + "Date: " + date + "\n");
                 output += (data);
+                values.put(country_val.toLowerCase()+'/'+region_val.toLowerCase()+'/'+param.toLowerCase(), value);
             }
         }
 
@@ -193,5 +199,9 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         } else {
             return "Very poor";
         }
+    }
+
+    public static Map<String, Double> getValues() {
+        return values;
     }
 }
