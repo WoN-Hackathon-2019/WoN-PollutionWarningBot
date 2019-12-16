@@ -1,10 +1,6 @@
 package won.bot.skeleton.action;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.util.Symbol;
-import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.rdf.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import won.bot.framework.eventbot.EventListenerContext;
@@ -17,25 +13,28 @@ import won.bot.skeleton.impl.AirQualityDataSchema;
 import won.protocol.message.WonMessage;
 import won.protocol.message.builder.WonMessageBuilder;
 import won.protocol.util.DefaultAtomModelWrapper;
-import won.protocol.util.RdfUtils;
-import won.protocol.vocabulary.SCHEMA;
 
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-    private static float PPM_OZONE = 0.1f;
-    private static float PPM_NO = 0.12f;
-    private static float PPM_SDIO = 0.2f;
-    private static float PPM_CO = 9f;
-    private static float µG_PM10 = 50f;
-    private static float µG_PM2_5 = 25f;
-    private static float µG_TSP = 80f;
+    private static double µG_O3 = 120f;
+    private static double µG_NO2 = 400f;
+    private static double µG_SO2 = 500f;
+    private static double µG_CO = 300f;
+    private static double µG_PM10 = 50f;
+    private static double µG_PM25 = 25f;
+    private static double µG_TSP = 80f;
+
+    private static final String o3 = "o3";
+    private static final String no2 = "no2";
+    private static final String pm10 = "pm10";
+    private static final String tsp = "tsp";
+    private static final String pm25 = "pm25";
+    private static final String co = "co";
+    private static final String so2 = "so2";
 
     public MatcherExtensionAtomCreatedAction(EventListenerContext eventListenerContext) {
         super(eventListenerContext);
@@ -55,7 +54,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
         DefaultAtomModelWrapper defaultWrapper = new DefaultAtomModelWrapper(atomCreatedEvent.getAtomData());
         Collection<String> tags = defaultWrapper.getAllTags();
-        if(!tags.contains("AirQualityData")) {//todo: filter tags set in atoms of AirQualityBot
+        if (!tags.contains("AirQualityData")) {//todo: filter tags set in atoms of AirQualityBot
             return;
         }
 
@@ -85,13 +84,15 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
             logger.info("Title: " + s);
         }
 */
-
+        getAirData(atomCreatedEvent, defaultWrapper, event);
 
 
         for (Map.Entry<URI, Set<URI>> entry : connectedSocketsMapSet.entrySet()) {
+            System.out.println("entry");
             URI senderSocket = entry.getKey();
             Set<URI> targetSocketsSet = entry.getValue();
             for (URI targetSocket : targetSocketsSet) {
+                System.out.println("socket found");
                 logger.info("TODO: Send MSG(" + senderSocket + "->" + targetSocket + ") that we registered that an Atom was created, atomUri is: " + atomCreatedEvent.getAtomURI());
                 WonMessage wonMessage = WonMessageBuilder
                         .connectionMessage()
@@ -106,20 +107,35 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         }
     }
 
-    private String getAirData(MatcherExtensionAtomCreatedEvent atomCreatedEvent, DefaultAtomModelWrapper defaultWrapper, Event event){
+    private String getAirData(MatcherExtensionAtomCreatedEvent atomCreatedEvent, DefaultAtomModelWrapper defaultWrapper, Event event) {
         //todo: substitute random values w/ actual values read from defaultWrapper
         Model m = defaultWrapper.getAtomModel();
         Resource atom = defaultWrapper.getAtomModel().getResource(((MatcherExtensionAtomCreatedEvent) event).getAtomURI().toString());
-        String def_string = "We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI()+ "\n";
+        String output = "We registered that an Atom w/ tag 'AirData' was created, atomUri is: " + atomCreatedEvent.getAtomURI() + "\n";
 
-        Property ozone = m.createProperty("http://schema.org/ozone");
+        String data = "";
 
-        String location = "Location: " + atom.getProperty(AirQualityDataSchema.LOCATION) + "\n";
-        String city = "City: " + atom.getProperty(AirQualityDataSchema.CITY) + "\n";
-        String country = "Country: " + atom.getProperty(AirQualityDataSchema.COUNTRY) + "\n";
-        String mParam = "Measurements: " + atom.getProperty(AirQualityDataSchema.MEASUREMENTS).getProperty(AirQualityDataSchema.MEASURE_PARAM) + "\n";
-        String mValue = "Measurements: " + atom.getProperty(AirQualityDataSchema.MEASUREMENTS).getProperty(AirQualityDataSchema.MEASURE_VALUE) + "\n";
-        String mUnit = "Measurements: " + atom.getProperty(AirQualityDataSchema.MEASUREMENTS).getProperty(AirQualityDataSchema.MEASURE_UNIT) + "\n";
+        String location = "Location: " + atom.getProperty(AirQualityDataSchema.LOCATION).getString() + "\n";
+        String city = "City: " + atom.getProperty(AirQualityDataSchema.CITY).getString() + "\n";
+        String country = "Country: " + atom.getProperty(AirQualityDataSchema.COUNTRY).getString() + "\n";
+
+        output += location +  city + country;
+
+
+        StmtIterator it = atom.listProperties(AirQualityDataSchema.MEASUREMENT);
+
+        while (it.hasNext()) {
+            data = "";
+            Statement st = it.next();
+            String param = st.getProperty(AirQualityDataSchema.MEASURE_PARAM).getString();
+            double value = st.getProperty(AirQualityDataSchema.MEASURE_VALUE).getDouble();
+            String unit = st.getProperty(AirQualityDataSchema.MEASURE_UNIT).getString();
+            double standard = getStandardByParam(param);
+            if(standard > 0){
+                data += (param + ": " + value + " " + unit + " AirIndex: " + getCat(value, standard) + "\n");
+                output += (data);
+            }
+        }
 
         //String airQ1 = "Air quality index (Ozone): " + getCat(atom.getProperty(ozone).getInt(), PPM_OZONE) + "\n";
         //String airQ2 = "Air quality index (Nitrogen dioxide): " + getCat(atom.getProperty(nitrogen).getInt(), PPM_NO) + "\n";
@@ -132,26 +148,41 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         //String description1 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getResource() + "\n";
         //String description2 = "description: " + atom.getProperty(SCHEMA.DESCRIPTION).getLanguage() + "\n";
 
-        return def_string.concat(city)
-                .concat(location)
-                .concat(city)
-                .concat(country)
-                .concat(mParam)
-                .concat(mValue)
-                .concat(mUnit);
+        System.out.println(output);
+        return output;
     }
 
-    private String getCat(float value, float opt){
-        float val = value / opt * 100;
-        if(val < 33){
+    private double getStandardByParam(String param) {
+        switch (param) {
+            case o3:
+                return µG_O3;
+            case no2:
+                return µG_NO2;
+            case co:
+                return µG_CO;
+            case so2:
+                return µG_SO2;
+            case pm10:
+                return µG_PM10;
+            case pm25:
+                return µG_PM25;
+            case tsp:
+                return µG_TSP;
+        }
+        return -1;
+    }
+
+    private String getCat(double value, double opt) {
+        double val = value / opt * 100;
+        if (val < 33) {
             return "Very good";
-        }else if(val < 66){
+        } else if (val < 66) {
             return "Good";
-        }else if(val < 99){
+        } else if (val < 99) {
             return "Fair";
-        }else if(val < 149){
+        } else if (val < 149) {
             return "Poor";
-        }else{
+        } else {
             return "Very poor";
         }
     }
