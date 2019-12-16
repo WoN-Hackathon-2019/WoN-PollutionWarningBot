@@ -13,6 +13,7 @@ import won.bot.skeleton.impl.AirQualityDataSchema;
 import won.protocol.message.WonMessage;
 import won.protocol.message.builder.WonMessageBuilder;
 import won.protocol.util.DefaultAtomModelWrapper;
+import won.protocol.vocabulary.SCHEMA;
 
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
@@ -115,24 +116,31 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
         String data = "";
 
-        String location = "Location: " + atom.getProperty(AirQualityDataSchema.LOCATION).getString() + "\n";
-        String city = "City: " + atom.getProperty(AirQualityDataSchema.CITY).getString() + "\n";
-        String country = "Country: " + atom.getProperty(AirQualityDataSchema.COUNTRY).getString() + "\n";
+        System.out.println("Found atom uri: " + atom.getURI());
+        Resource addr = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).getPropertyResourceValue(AirQualityDataSchema.ADDRESS);
+        System.out.println(addr);
 
-        output += location +  city + country;
+        String country = "Country: " + addr.getProperty(AirQualityDataSchema.COUNTRY).getString() + "\n";
+        String location = "Locality: " + addr.getProperty(AirQualityDataSchema.LOCALITY).getString() + "\n";
+        String region = "Region: " + atom.getProperty(AirQualityDataSchema.CITY).getString() + "\n";
+
+        output += country + location + region;
 
 
-        StmtIterator it = atom.listProperties(AirQualityDataSchema.MEASUREMENT);
+        StmtIterator it = atom.getPropertyResourceValue(AirQualityDataSchema.LOCATION).listProperties(AirQualityDataSchema.MEASUREMENT);
 
         while (it.hasNext()) {
             data = "";
             Statement st = it.next();
             String param = st.getProperty(AirQualityDataSchema.MEASURE_PARAM).getString();
-            double value = st.getProperty(AirQualityDataSchema.MEASURE_VALUE).getDouble();
             String unit = st.getProperty(AirQualityDataSchema.MEASURE_UNIT).getString();
+            String date = "";// st.getProperty(AirQualityDataSchema.MEASURE_DATE).getString();
+            String param_name = st.getProperty(AirQualityDataSchema.MEASURE_PARAM_NAME).getString();
+
+            double value = st.getProperty(AirQualityDataSchema.MEASURE_VALUE).getDouble();
             double standard = getStandardByParam(param);
-            if(standard > 0){
-                data += (param + ": " + value + " " + unit + " AirIndex: " + getCat(value, standard) + "\n");
+            if (standard > 0) {
+                data += (param_name + ": " + value + " " + unit + " AirIndex: " + getCat(value, standard) + "Date: " + date + "\n");
                 output += (data);
             }
         }
