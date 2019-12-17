@@ -41,7 +41,15 @@ public class Message2User extends BaseEventBotAction {
                     "example: sub AT/Amstetten \n"+
                     "______________________________\n"+
                     "unsub country/location \nget no more messages everytime a new atom of the specified location is created. \n"+
-                    "example: unsub AT/Amstetten \n";
+                    "example: unsub AT/Amstetten \n"+
+                    "______________________________\n"+
+                    "get warnings x (a-c) \n" + "get a list of every location in the specified countries, which has an AirIndex of x \n" +
+                    "x = 0   --> AirQuality is very good. \n" +
+                    "x = 1   --> AirQuality is good. \n" +
+                    "x = 2   --> AirQuality is fair. \n" +
+                    "x = 3   --> AirQuality is poor. \n" +
+                    "x = 4   --> AirQuality is very poor. \n"+
+                    "example: get warnings 1 (a-c)";
 
     public static Map<String, List<String>> getSubscribers() {
         return subscribers;
@@ -76,7 +84,7 @@ public class Message2User extends BaseEventBotAction {
             Pattern regexGiveCountries = Pattern.compile("^get \\([a-z]-[a-z]\\)");
             Pattern sub_regex = Pattern.compile("^sub [a-z]+/[a-z]+");
             Pattern unsub_regex = Pattern.compile("^unsub [a-z]+/[a-z]+");
-            Pattern warning_regex = Pattern.compile("^warnings [0-4] \\([a-z]-[a-z]\\)");
+            Pattern warning_regex = Pattern.compile("^get warnings [0-4] \\([a-z]-[a-z]\\)");
             //System.out.println("regexGiveCities: " + regexGiveCities);
             //System.out.println("regexGiveCountries: " + regexGiveCountries);
             //System.out.println("sub_regex: " + sub_regex);
@@ -114,7 +122,7 @@ public class Message2User extends BaseEventBotAction {
                 char[] bounds = getBounds(message);
                 Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> charIsInRange(bounds[0], bounds[1], s.charAt(0))).collect(Collectors.toSet());
                 List<String> countries = new ArrayList<>();
-                if (isValid(message)) returnMsg = "Possible countries are: \n";
+                returnMsg = "Possible countries are: \n";
                 for (String s : keys) {
                     String country = s.split("/")[0];
                     if (!countries.contains(country)) {
@@ -128,7 +136,7 @@ public class Message2User extends BaseEventBotAction {
                 String country = message.split("/")[0];
                 Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> s.split("/")[0].compareTo(country) == 0 && charIsInRange(bounds[0], bounds[1], s.split("/")[1].charAt(0))).collect(Collectors.toSet());
                 List<String> cities = new ArrayList<>();
-                if (isValid(message)) returnMsg = "Possible cities are: \n";
+                returnMsg = "Possible cities are: \n";
                 for (String s : keys) {
                     String city = s.split("/")[1];
                     if (!cities.contains(city)) {
@@ -141,7 +149,7 @@ public class Message2User extends BaseEventBotAction {
                 char[] bounds = getBounds(message);
                 String cat = message.split(" ")[1];
                 Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> charIsInRange(bounds[0], bounds[1], s.charAt(0))).collect(Collectors.toSet());
-                returnMsg = "Cities with the measured param which were "+MatcherExtensionAtomCreatedAction.getCatByNr(Integer.parseInt(cat))+ " are: \n";
+                returnMsg = "Cities with the measured param which were '"+MatcherExtensionAtomCreatedAction.getCatByNr(Integer.parseInt(cat))+ "' are: \n";
 
                 List<String> data = new ArrayList<>();
                 for (String s : keys) {
