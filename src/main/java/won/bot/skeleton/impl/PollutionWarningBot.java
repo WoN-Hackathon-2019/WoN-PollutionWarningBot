@@ -3,7 +3,6 @@ package won.bot.skeleton.impl;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 
-import jdk.nashorn.internal.objects.annotations.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,9 +30,11 @@ import won.bot.framework.extensions.serviceatom.ServiceAtomBehaviour;
 import won.bot.framework.extensions.serviceatom.ServiceAtomExtension;
 import won.bot.skeleton.action.MatcherExtensionAtomCreatedAction;
 import won.bot.skeleton.action.Message2User;
-import won.bot.skeleton.context.SkeletonBotContextWrapper;
-
-public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAtomExtension {
+import won.bot.skeleton.context.PollutionWarningBotContextWrapper;
+/**
+ * Created by Team WoN-PollutionWarningBot on 17.12.2019.
+ */
+public class PollutionWarningBot extends EventBot implements MatcherExtension, ServiceAtomExtension {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private int registrationMatcherRetryInterval;
@@ -60,13 +61,13 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
     @Override
     protected void initializeEventListeners() {
         EventListenerContext ctx = getEventListenerContext();
-        if (!(getBotContextWrapper() instanceof SkeletonBotContextWrapper)) {
+        if (!(getBotContextWrapper() instanceof PollutionWarningBotContextWrapper)) {
             logger.error(getBotContextWrapper().getBotName() + " does not work without a SkeletonBotContextWrapper");
             throw new IllegalStateException(
                             getBotContextWrapper().getBotName() + " does not work without a SkeletonBotContextWrapper");
         }
         EventBus bus = getEventBus();
-        SkeletonBotContextWrapper botContextWrapper = (SkeletonBotContextWrapper) getBotContextWrapper();
+        PollutionWarningBotContextWrapper botContextWrapper = (PollutionWarningBotContextWrapper) getBotContextWrapper();
         // register listeners for event.impl.command events used to tell the bot to send
         // messages
         ExecuteWonMessageCommandBehaviour wonMessageCommandBehaviour = new ExecuteWonMessageCommandBehaviour(ctx);

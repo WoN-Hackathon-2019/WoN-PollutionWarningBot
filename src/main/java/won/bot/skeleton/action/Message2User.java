@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Regexp;
 import won.bot.framework.eventbot.EventListenerContext;
 import won.bot.framework.eventbot.action.BaseEventBotAction;
 import won.bot.framework.eventbot.event.Event;
@@ -13,7 +12,7 @@ import won.bot.framework.eventbot.event.MessageEvent;
 import won.bot.framework.eventbot.event.impl.command.connectionmessage.ConnectionMessageCommandEvent;
 import won.bot.framework.eventbot.event.impl.wonmessage.MessageFromOtherAtomEvent;
 import won.bot.framework.eventbot.listener.EventListener;
-import won.bot.skeleton.context.SkeletonBotContextWrapper;
+import won.bot.skeleton.context.PollutionWarningBotContextWrapper;
 import won.protocol.message.WonMessage;
 import won.protocol.model.Connection;
 import won.protocol.util.WonRdfUtils;
@@ -25,7 +24,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Created by MS on 24.09.2019.
+ * Created by Team WoN-PollutionWarningBot on 17.12.2019.
  */
 public class Message2User extends BaseEventBotAction {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -66,10 +65,8 @@ public class Message2User extends BaseEventBotAction {
         logger.info("MessageEvent received");
         EventListenerContext ctx = getEventListenerContext();
         if (event instanceof MessageFromOtherAtomEvent
-                && ctx.getBotContextWrapper() instanceof SkeletonBotContextWrapper) {
+                && ctx.getBotContextWrapper() instanceof PollutionWarningBotContextWrapper) {
             Connection con = ((MessageFromOtherAtomEvent) event).getCon();
-            URI msgAtomUri = con.getAtomURI();
-            URI targetUri = con.getTargetAtomURI();
             URI socketUri = con.getSocketURI();
             String message = "";
             try {
@@ -85,12 +82,6 @@ public class Message2User extends BaseEventBotAction {
             Pattern sub_regex = Pattern.compile("^sub [a-z]+/[a-z]+");
             Pattern unsub_regex = Pattern.compile("^unsub [a-z]+/[a-z]+");
             Pattern warning_regex = Pattern.compile("^get warnings [0-4] \\([a-z]-[a-z]\\)");
-            //System.out.println("regexGiveCities: " + regexGiveCities);
-            //System.out.println("regexGiveCountries: " + regexGiveCountries);
-            //System.out.println("sub_regex: " + sub_regex);
-            //System.out.println("unsub_regex: " + unsub_regex);
-            //System.out.println("msg: " + message);
-
 
             String returnMsg = "Sorry, I couln´t recognize your input parameters. Did you check for typos?";
 
@@ -147,7 +138,7 @@ public class Message2User extends BaseEventBotAction {
 
             } else if (warning_regex.matcher(message).find()) {
                 char[] bounds = getBounds(message);
-                String cat = message.split(" ")[1];
+                String cat = message.split(" ")[2];
                 Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> charIsInRange(bounds[0], bounds[1], s.charAt(0))).collect(Collectors.toSet());
                 returnMsg = "Cities with the measured param which were '"+MatcherExtensionAtomCreatedAction.getCatByNr(Integer.parseInt(cat))+ "' are: \n";
 
@@ -184,7 +175,7 @@ public class Message2User extends BaseEventBotAction {
     }
 
     private char[] getBounds(String message) {
-        String[] boundsString = new String[2];
+        String[] boundsString;
         try {
             boundsString = message.split("\\(")[1].split("\\)")[0].split("-");
         } catch (Exception e) {
