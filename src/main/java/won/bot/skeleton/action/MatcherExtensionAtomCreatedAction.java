@@ -130,7 +130,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
         String country = "Country: " + country_val + "\n";
         String location = "Locality: " + addr.getProperty(AirQualityDataSchema.ADDR_LOCALITY).getString() + "\n";
-        String region = "Region: " + region_val + "\n\n";
+        String region = "Region: " + region_val + "\n \n";
 
         output += country + location + region;
 
@@ -149,7 +149,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
 
             if (standard > 0) {
                 data += (param_name + ": " + value + " " + unit + "\nAirIndex: " + getCat(value, standard) + "\nDate: " + date + "\n");
-                output += (data)+"\n";
+                output += (data) + " \n";
                 values.put(country_val.toLowerCase() + '/' + region_val.toLowerCase() + '/' + param.toLowerCase(), value);
             }
         }
@@ -171,7 +171,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         return outData;
     }
 
-    private double getStandardByParam(String param) {
+    public static double getStandardByParam(String param) {
         switch (param) {
             case o3:
                 return µG_O3;
@@ -191,7 +191,7 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         return -1;
     }
 
-    private String getCat(double value, double opt) {
+    public static String getCat(double value, double opt) {
         double val = value / opt * 100;
         if (val < 33) {
             return "Very good";
@@ -203,6 +203,36 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
             return "Poor";
         } else {
             return "Very poor";
+        }
+    }
+
+    public static String getCatByNr(int nr) {
+        switch (nr) {
+            case 0:
+                return "Very good";
+            case 1:
+                return "Good";
+            case 2:
+                return "Fair";
+            case 3:
+                return "Poor";
+            default:
+                return "Very poor";
+        }
+    }
+
+    public static int getCatNr(double value, double opt) {
+        double val = value / opt * 100;
+        if (val < 33) {
+            return 0;
+        } else if (val < 66) {
+            return 1;
+        } else if (val < 99) {
+            return 2;
+        } else if (val < 149) {
+            return 3;
+        } else {
+            return 4;
         }
     }
 
