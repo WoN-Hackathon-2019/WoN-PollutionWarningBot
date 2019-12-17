@@ -157,11 +157,13 @@ public class Message2User extends BaseEventBotAction {
                     double standard = MatcherExtensionAtomCreatedAction.getStandardByParam(param);
                     int lvl = MatcherExtensionAtomCreatedAction.getCatNr(MatcherExtensionAtomCreatedAction.getValues().get(s), standard);
                     if (lvl == Integer.parseInt(cat)) {
-                        if(!data.contains(s))data.add(s);
+                        String[] ss = s.split("/");
+                        s = ss[0] + ss[1] + MatcherExtensionAtomCreatedAction.getFullName(ss[2]);
+                        if (!data.contains(s)) data.add(s);
                     }
                 }
                 Collections.sort(data);
-                for (String s: data){
+                for (String s : data) {
                     returnMsg += s + "\n";
                 }
             }else if (message.compareTo("help")==0){

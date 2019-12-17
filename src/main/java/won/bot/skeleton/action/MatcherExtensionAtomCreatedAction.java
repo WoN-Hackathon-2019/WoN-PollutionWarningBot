@@ -191,6 +191,26 @@ public class MatcherExtensionAtomCreatedAction extends BaseEventBotAction {
         return -1;
     }
 
+    public static String getFullName(String param) {
+        switch (param) {
+            case o3:
+                return "Ozone";
+            case no2:
+                return "Nitrogendioxide";
+            case co:
+                return "Carbonmonoxide";
+            case so2:
+                return "Sulfurdioxide";
+            case pm10:
+                return "Atmospheric aerosol particles(size 10µm)";
+            case pm25:
+                return "Atmospheric aerosol particles(size 2.5µm)";
+            case tsp:
+                return "Total suspended particles";
+        }
+        return "";
+    }
+
     public static String getCat(double value, double opt) {
         double val = value / opt * 100;
         if (val < 33) {
