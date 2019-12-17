@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 public class Message2User extends BaseEventBotAction {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-
     public static Map<String, List<String>> getSubscribers() {
         return subscribers;
     }
@@ -64,6 +63,7 @@ public class Message2User extends BaseEventBotAction {
             Pattern regexGiveCountries = Pattern.compile("^get \\([a-z]-[a-z]\\)");
             Pattern sub_regex = Pattern.compile("^sub [a-z]+/[a-z]+");
             Pattern unsub_regex = Pattern.compile("^unsub [a-z]+/[a-z]+");
+            Pattern warning_regex = Pattern.compile("^warnings [0-4] \\([a-z]-[a-z]\\)");
             //System.out.println("regexGiveCities: " + regexGiveCities);
             //System.out.println("regexGiveCountries: " + regexGiveCountries);
             //System.out.println("sub_regex: " + sub_regex);
@@ -122,6 +122,26 @@ public class Message2User extends BaseEventBotAction {
                         returnMsg += city + "\n";
                         cities.add(city);
                     }
+                }
+
+            } else if (warning_regex.matcher(message).find()) {
+                char[] bounds = getBounds(message);
+                String cat = message.split(" ")[1];
+                Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> charIsInRange(bounds[0], bounds[1], s.charAt(0))).collect(Collectors.toSet());
+                returnMsg = "Cities with the measured param which were "+MatcherExtensionAtomCreatedAction.getCatByNr(Integer.parseInt(cat))+ " are: \n";
+
+                List<String> data = new ArrayList<>();
+                for (String s : keys) {
+                    String param = s.split("/")[2];
+                    double standard = MatcherExtensionAtomCreatedAction.getStandardByParam(param);
+                    int lvl = MatcherExtensionAtomCreatedAction.getCatNr(MatcherExtensionAtomCreatedAction.getValues().get(s), standard);
+                    if (lvl == Integer.parseInt(cat)) {
+                        if(!data.contains(s))data.add(s);
+                    }
+                }
+                Collections.sort(data);
+                for (String s: data){
+                    returnMsg += s + "\n";
                 }
             }
 
