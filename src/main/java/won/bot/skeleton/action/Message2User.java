@@ -29,6 +29,19 @@ import java.util.stream.Collectors;
  */
 public class Message2User extends BaseEventBotAction {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    private final String helpMsg =
+            "Your commands: \n"+
+                    "get (a-z) \n" +"get all available coutries which names start with a letter between 'a' and 'z' \n" +
+                    "example: get (a-c) --> AT \n"+
+                    "______________________________\n"+
+                    "country/get (a-z) \n" + "get all available locations in the specified country which names start with a letter between 'a' and 'z' \n"+
+                    "example: AT/get (a-b)  --> Amstetten \n"+
+                    "______________________________\n"+
+                    "sub country/location \n" +"get a message you everytime a new atom of the specified location is created. \n"+
+                    "example: sub AT/Amstetten \n"+
+                    "______________________________\n"+
+                    "unsub country/location \nget no more messages everytime a new atom of the specified location is created. \n"+
+                    "example: unsub AT/Amstetten \n";
 
     public static Map<String, List<String>> getSubscribers() {
         return subscribers;
@@ -143,6 +156,8 @@ public class Message2User extends BaseEventBotAction {
                 for (String s: data){
                     returnMsg += s + "\n";
                 }
+            }else if (message.compareTo("help")==0){
+                returnMsg = helpMsg;
             }
 
             try {

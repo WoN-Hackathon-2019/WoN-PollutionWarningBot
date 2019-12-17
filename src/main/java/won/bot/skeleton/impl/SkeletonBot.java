@@ -39,20 +39,8 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
     private int registrationMatcherRetryInterval;
     private MatcherBehaviour matcherBehaviour;
     private ServiceAtomBehaviour serviceAtomBehaviour;
-    private final String helloMsg = "Hello I am the PollutionWarningBot-v0.1.1 and I will send you requested information about air pollution.  \n";
-    private final String helpMsg =
-            "Your commands: \n"+
-            "get (a-z) \n" +"get all available coutries which names start with a letter between 'a' and 'z' \n" +
-            "example: get (a-c) --> AT \n"+
-            "______________________________\n"+
-            "country/get (a-z) \n" + "get all available locations in the specified country which names start with a letter between 'a' and 'z' \n"+
-            "example: AT/get (a-b)  --> Amstetten \n"+
-            "______________________________\n"+
-            "sub country/location \n" +"get a message you everytime a new atom of the specified location is created. \n"+
-            "example: sub AT/Amstetten \n"+
-            "______________________________\n"+
-            "unsub country/location \nget no more messages everytime a new atom of the specified location is created. \n"+
-            "example: unsub AT/Amstetten \n";
+    private final String helloMsg = "Hello I am the PollutionWarningBot-v0.1.1 and I will send you requested information about air pollution.  \n" +
+                                     "type 'help' to see commands."   ;
 
     // bean setter, used by spring
     public void setRegistrationMatcherRetryInterval(final int registrationMatcherRetryInterval) {
