@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class Message2User extends BaseEventBotAction {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+
     public static Map<String, List<String>> getSubscribers() {
         return subscribers;
     }
@@ -70,7 +71,7 @@ public class Message2User extends BaseEventBotAction {
             //System.out.println("msg: " + message);
 
 
-            String returnMsg = "";
+            String returnMsg = "Sorry, I couln´t recognize your input parameters. Did you check for typos?";
 
             if (sub_regex.matcher(message).find()) {
                 message = message.split("sub ")[1];
@@ -80,11 +81,11 @@ public class Message2User extends BaseEventBotAction {
                     List<String> uri = new ArrayList<>();
                     uri.add(socketUri.toString());
                     subscribers.put(message, uri);
-                    returnMsg = "Subscribed to: " + message;
+                    if (isValid(message)) returnMsg = "Subscribed to: " + message;
                 } else {
                     subsc.add(socketUri.toString());
                     subscribers.put(message, subsc);
-                    returnMsg = "Already subscribed to: " + message;
+                    if (isValid(message)) returnMsg = "Already subscribed to: " + message;
                 }
             } else if (unsub_regex.matcher(message).find()) {
                 message = message.split("unsub ")[1];
@@ -93,39 +94,35 @@ public class Message2User extends BaseEventBotAction {
                 if (subsc != null) {
                     subsc.remove(socketUri.toString());
                     subscribers.put(message, subsc);
-                    returnMsg = "Unsubscribed from: " + message;
+                    if (isValid(message)) returnMsg = "Unsubscribed from: " + message;
                 }
 
-                //ChuckNorrisJoke chuckNorrisJoke = JokeBotsApi.fetchJokeData(this.jsonURL);
-                //String newJokeText = chuckNorrisJoke.getValue();
-                //responseMessge = "Okay, how about this one: \n" + newJokeText;
             } else if (regexGiveCountries.matcher(message).find()) {
                 char[] bounds = getBounds(message);
                 Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> charIsInRange(bounds[0], bounds[1], s.charAt(0))).collect(Collectors.toSet());
                 List<String> countries = new ArrayList<>();
-                returnMsg = "Possible countries are: \n";
+                if (isValid(message)) returnMsg = "Possible countries are: \n";
                 for (String s : keys) {
                     String country = s.split("/")[0];
-                    if(!countries.contains(country)){
+                    if (!countries.contains(country)) {
                         returnMsg += country.toUpperCase() + "\n";
                         countries.add(country);
                     }
                 }
 
-            }else if (regexGiveCities.matcher(message).find()) {
+            } else if (regexGiveCities.matcher(message).find()) {
                 char[] bounds = getBounds(message);
                 String country = message.split("/")[0];
-                Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> s.split("/")[0].compareTo(country)==0 && charIsInRange(bounds[0], bounds[1], s.split("/")[1].charAt(0))).collect(Collectors.toSet());
+                Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet().stream().filter(s -> s.split("/")[0].compareTo(country) == 0 && charIsInRange(bounds[0], bounds[1], s.split("/")[1].charAt(0))).collect(Collectors.toSet());
                 List<String> cities = new ArrayList<>();
-                returnMsg = "Possible cities are: \n";
+                if (isValid(message)) returnMsg = "Possible cities are: \n";
                 for (String s : keys) {
                     String city = s.split("/")[1];
-                    if(!cities.contains(city)){
+                    if (!cities.contains(city)) {
                         returnMsg += city + "\n";
                         cities.add(city);
                     }
                 }
-
             }
 
             try {
@@ -162,5 +159,15 @@ public class Message2User extends BaseEventBotAction {
             return null;
         String message = WonRdfUtils.MessageUtils.getTextMessage(wonMessage);
         return StringUtils.trim(message);
+    }
+
+    private boolean isValid(String message) {
+        Set<String> keys = MatcherExtensionAtomCreatedAction.getValues().keySet();
+        for (String s : keys) {
+            if (s.contains(message)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

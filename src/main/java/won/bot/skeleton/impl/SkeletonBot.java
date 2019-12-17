@@ -3,6 +3,7 @@ package won.bot.skeleton.impl;
 import java.lang.invoke.MethodHandles;
 import java.net.URI;
 
+import jdk.nashorn.internal.objects.annotations.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +34,25 @@ import won.bot.skeleton.action.Message2User;
 import won.bot.skeleton.context.SkeletonBotContextWrapper;
 
 public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAtomExtension {
+
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private int registrationMatcherRetryInterval;
     private MatcherBehaviour matcherBehaviour;
     private ServiceAtomBehaviour serviceAtomBehaviour;
+    private final String helloMsg = "Hello I am the PollutionWarningBot-v0.1.1 and I will send you requested information about air pollution.  \n";
+    private final String helpMsg =
+            "Your commands: \n"+
+            "get (a-z) \n" +"get all available coutries which names start with a letter between 'a' and 'z' \n" +
+            "example: get (a-c) --> AT \n"+
+            "______________________________\n"+
+            "country/get (a-z) \n" + "get all available locations in the specified country which names start with a letter between 'a' and 'z' \n"+
+            "example: AT/get (a-b)  --> Amstetten \n"+
+            "______________________________\n"+
+            "sub country/location \n" +"get a message you everytime a new atom of the specified location is created. \n"+
+            "example: sub AT/Amstetten \n"+
+            "______________________________\n"+
+            "unsub country/location \nget no more messages everytime a new atom of the specified location is created. \n"+
+            "example: unsub AT/Amstetten \n";
 
     // bean setter, used by spring
     public void setRegistrationMatcherRetryInterval(final int registrationMatcherRetryInterval) {
@@ -87,7 +103,7 @@ public class SkeletonBot extends EventBot implements MatcherExtension, ServiceAt
                 EventListenerContext ctx = getEventListenerContext();
                 ConnectFromOtherAtomEvent connectFromOtherAtomEvent = (ConnectFromOtherAtomEvent) event;
                 try {
-                    String message = "Hello I am the PollutionWarningBot-v0.1.1 and I will send you a message everytime an atom with tag 'AirQualityData' is created...";
+                    String message = helloMsg;
                     final ConnectCommandEvent connectCommandEvent = new ConnectCommandEvent(
                                     connectFromOtherAtomEvent.getRecipientSocket(),
                                     connectFromOtherAtomEvent.getSenderSocket(), message);
